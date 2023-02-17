@@ -19,11 +19,3 @@ type UniFromHipo struct {
 	Name          string   `json:"name"`
 	WebPages      []string `json:"web_pages"`
 }
-
-/*
-type UniversitiesResponse struct {
-	//Universities []University `json:"data"`
-	Name       string       `json:"name"`
-	University []University `json:"data"`
-}
-*/

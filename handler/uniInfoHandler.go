@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -33,18 +34,18 @@ func findUniversityInformation(searchName string, w http.ResponseWriter) []UniFr
 	requestedUni := "http://universities.hipolabs.com/search?name=" + searchName
 	responseUni, err := http.Get(requestedUni)
 	if err != nil {
-		http.Error(w, "Error in creating request. Cannot reach service.", http.StatusServiceUnavailable)
+		http.Error(w, "Error in creating Get-request. Cannot reach service.", http.StatusServiceUnavailable)
 	}
 
-	bodyUni, err := ioutil.ReadAll(responseUni.Body)
+	bodyOfUniversity, err := ioutil.ReadAll(responseUni.Body)
 	if err != nil {
 		http.Error(w, "Unexpected format", http.StatusServiceUnavailable)
 	}
 
-	var unis []UniFromHipo
-	json.Unmarshal(bodyUni, &unis)
+	var universities []UniFromHipo
+	json.Unmarshal(bodyOfUniversity, &universities)
 
-	return unis
+	return universities
 
 }
 
@@ -86,12 +87,12 @@ Then it appends the tempUni to the dataOfUnis slice.
 */
 func dataOfUnis(unis []UniFromHipo) []University {
 	var dataOfUnis []University
-	var tempUni University
+	var currentUni University
 	for _, uni := range unis {
-		tempUni.Name = uni.Name
-		tempUni.Isocode = uni.AlphaTwoCode
-		tempUni.Webpages = uni.WebPages
-		tempUni.Country = uni.Country
+		currentUni.Name = uni.Name
+		currentUni.Isocode = uni.AlphaTwoCode
+		currentUni.Webpages = uni.WebPages
+		currentUni.Country = uni.Country
 		/*
 			for _, s := range restCountries {
 				if s.Country == r.Country {
@@ -100,14 +101,14 @@ func dataOfUnis(unis []UniFromHipo) []University {
 				}
 			}
 		*/
-		dataOfUnis = append(dataOfUnis, tempUni)
+		dataOfUnis = append(dataOfUnis, currentUni)
 	}
 
 	return dataOfUnis
 }
 
 /*
-This function is a HTTP handler that takes a request and returns a JSON response with information about universities that match a search name.
+This function is an HTTP handler that takes a request and returns a JSON response with information about universities that match a search name.
 The handler first checks that the URL path contains exactly 5 segments and extracts the search name from the last segment.
 It then uses helper functions to retrieve and process university data, including finding the countries in which
 the universities are located and formatting the data as a slice of University structs.
@@ -117,15 +118,15 @@ and writes the response to the client. If an error occurs at any stage, the func
 func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// splits the path into components.
-	parts := strings.Split(r.URL.Path, "/")
+	pathComponents := strings.Split(r.URL.Path, "/")
 	// Expects the path to have exaclty 5 segments
-	if len(parts) != 5 {
+	if len(pathComponents) != 5 {
 		http.Error(w, "Expecting format ../name", http.StatusBadRequest)
 		return
 	}
 
 	// searchName will be index of the last element in the slice.
-	searchName := parts[len(parts)-1]
+	searchName := pathComponents[len(pathComponents)-1]
 
 	unisInfo := findUniversityInformation(searchName, w)
 	if unisInfo == nil {
@@ -155,5 +156,6 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Error(w, "", http.StatusOK)
+	fmt.Println(r.URL.Path)
 
 }
