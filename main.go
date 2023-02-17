@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Assignment1/handler"
 	"log"
 	"net/http"
 	"os"
@@ -16,8 +17,8 @@ func main() {
 	}
 
 	// Set up handler endpoints
-	//http.HandleFunc("/", handler.DefaultHandler)
-	//http.HandleFunc(handler.UNI_INFO_PATH, handler.UniInfoHandler)
+	http.HandleFunc("/", handler.DefaultHandler)
+	http.HandleFunc(handler.UNI_INFO_PATH, handler.UniInfoHandler)
 	//http.HandleFunc(handler.NEIGHBOR_UNIS_PATH, handler.neighbourUnisHandler)
 	//http.HandleFunc(handler.DIAG_PATH, handler.diagHandler)
 
