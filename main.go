@@ -10,6 +10,7 @@ import (
 func main() {
 
 	// Handle port assignment (either based on environment variable, or local override)
+	log.Println("Starting main function.")
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Println("$PORT has not been set. Default: 8080")
@@ -17,7 +18,9 @@ func main() {
 	}
 
 	// Set up handler endpoints
+	log.Println("Starting defaultHandler function.")
 	http.HandleFunc("/", handler.DefaultHandler)
+	log.Println("Starting uniInfoHandler function.")
 	http.HandleFunc(handler.UNI_INFO_PATH, handler.UniInfoHandler)
 	//http.HandleFunc(handler.NEIGHBOR_UNIS_PATH, handler.neighbourUnisHandler)
 	//http.HandleFunc(handler.DIAG_PATH, handler.diagHandler)
