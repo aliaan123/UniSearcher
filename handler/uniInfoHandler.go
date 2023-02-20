@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -18,11 +19,10 @@ calls the "http.Get()" function to send an HTTP GET request to the API endpoint 
 
 If the request fails, it returns an HTTP error message using the "http.Error()" function,
 with an HTTP status code of "http.StatusServiceUnavailable". If the request is successful,
-
 it reads the response body using "ioutil.ReadAll()", which returns a byte array representing the response body.
 
 The function then creates an empty slice of "UniFromHipo" objects and
-unmarshals the byte array response body into this slice using the "json.Unmarshal()" function.
+unmarshal the byte array response body into this slice using the "json.Unmarshal()" function.
 If there are any errors during the unmarshalling process, the function will panic.
 
 Finally, the function returns the populated slice of "UniFromHipo" objects.
@@ -43,7 +43,10 @@ func findUniversityInformation(searchName string, w http.ResponseWriter) []UniFr
 	}
 
 	var universities []UniFromHipo
-	json.Unmarshal(bodyOfUniversity, &universities)
+	err2 := json.Unmarshal(bodyOfUniversity, &universities)
+	if err2 != nil {
+		log.Fatal("Error when unmarshalling:", err)
+	}
 
 	return universities
 
@@ -82,7 +85,7 @@ which is a custom struct defined somewhere in the code that's not shown here. It
 (Slice is similar to an array, but unlike arrays, slices are dynamically sized, meaning their size can grow or shrink as needed)
 
 For each element in the unis slice, it creates a new tempUni variable of type University,
-sets its Name, Isocode, Webpages and Country fields based on the corresponding fields of the uni element.
+sets its Name, Iso-code, Webpages and Country fields based on the corresponding fields of the uni element.
 Then it appends the tempUni to the dataOfUnis slice.
 */
 func dataOfUnis(unis []UniFromHipo) []University {
@@ -112,6 +115,7 @@ This function is an HTTP handler that takes a request and returns a JSON respons
 The handler first checks that the URL path contains exactly 5 segments and extracts the search name from the last segment.
 It then uses helper functions to retrieve and process university data, including finding the countries in which
 the universities are located and formatting the data as a slice of University structs.
+
 Finally, the function sets the content type header to application/json, encodes the university data as JSON,
 and writes the response to the client. If an error occurs at any stage, the function returns an error status code with a corresponding error message.
 */
@@ -119,13 +123,14 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// splits the path into components.
 	pathComponents := strings.Split(r.URL.Path, "/")
-	// Expects the path to have exaclty 5 segments
+	// Expects the path to have exactly 5 segments
 	if len(pathComponents) != 5 {
-		http.Error(w, "Expecting format ../name", http.StatusBadRequest)
+		http.Error(w, "Malformed URL. Expecting format ../name", http.StatusBadRequest)
+		log.Println("Malformed URL in request.")
 		return
 	}
 
-	// searchName will be index of the last element in the slice.
+	// searchName is the index of the last element in the slice.
 	searchName := pathComponents[len(pathComponents)-1]
 
 	unisInfo := findUniversityInformation(searchName, w)
