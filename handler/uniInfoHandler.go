@@ -10,8 +10,7 @@ import (
 )
 
 /*
-The function in this code snippet is called "findUniversityInformation". ¨
-It takes in two parameters, a string variable "searchName" and an HTTP response writer "w",
+The function takes in two parameters, a string variable "searchName" and an HTTP response writer "w",
 and returns a slice of objects of the type "UniFromHipo".
 
 Inside the function, it first constructs a URL string using the "searchName" parameter and
@@ -29,7 +28,7 @@ Finally, the function returns the populated slice of "UniFromHipo" objects.
 This function essentially makes an HTTP request to the given API endpoint and
 returns the unmarshalled JSON data as a slice of objects of type "UniFromHipo".
 */
-func findUniversityInformation(searchName string, w http.ResponseWriter) []UniFromHipo {
+func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 
 	requestedUni := "http://universities.hipolabs.com/search?name=" + searchName
 	responseUni, err := http.Get(requestedUni)
@@ -53,14 +52,14 @@ func findUniversityInformation(searchName string, w http.ResponseWriter) []UniFr
 }
 
 /*
-The findCountries function takes in a slice of UniFromHipo structs as input and
+The getCountries function takes in a slice of UniFromHipo structs as input and
 returns a slice of strings that represents the countries in which those universities are located.
 It does this by iterating over the input slice of universities and checking if the country of each university is already in the list of countries.
 If the country is not in the list, it is added to the list of countries.
 The function uses a boolean variable isFound to keep track of whether a country has been found in the list of countries or not.
 The isFound variable is reset to false at the end of each iteration to ensure that the function works correctly.
 */
-func findCountries(unis []UniFromHipo) []string {
+func getCountries(unis []UniFromHipo) []string {
 	var countries []string
 	var isFound bool
 
@@ -133,13 +132,13 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// searchName is the index of the last element in the slice.
 	searchName := pathComponents[len(pathComponents)-1]
 
-	unisInfo := findUniversityInformation(searchName, w)
+	unisInfo := getUniversityInfo(searchName, w)
 	if unisInfo == nil {
 		http.Error(w, "No data found", http.StatusInternalServerError)
 		return
 	}
 
-	countries := findCountries(unisInfo)
+	countries := getCountries(unisInfo)
 	if countries == nil {
 		http.Error(w, "Could not put together data", http.StatusInternalServerError)
 		return
