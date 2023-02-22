@@ -27,7 +27,8 @@ func main() {
 
 	// Start server
 	log.Println("Starting server on port " + port + " ...")
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	port = ":" + port
+	log.Fatal(http.ListenAndServe(port, nil))
 
 }
 
