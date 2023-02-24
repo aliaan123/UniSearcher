@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// TODO : 1. fix limit i url
+// 		  2. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
+//		  3. skriv README fil
+//        4. fix language og maps i UNIVERSITY
+
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
 	// splits the path into components.
@@ -16,30 +21,93 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 	expectedLength := len(strings.Split(NEIGHBOR_UNIS_PATH, "/")) + 1
 
 	// Expects the path to have exactly 5 segments
-	if len(pathComponents) != 6 || len(pathComponents) < expectedLength {
+	if len(pathComponents) != 6 || len(pathComponents) < expectedLength || len(pathComponents) > expectedLength {
 		status := http.StatusBadRequest
 		http.Error(w, "Expecting format .../name/university", status)
 		return
 	}
 
+	// The country name that is searched for is at the second last index of the URL.
 	searchCountryName := pathComponents[expectedLength-2]
+	// The university name that is searched for is at the last index of the URL.
 	searchUniName := pathComponents[expectedLength-1]
 
 	if searchCountryName == "" || searchUniName == "" {
 		http.Error(w, "Country name and partial or complete name of university must be given", http.StatusBadRequest)
 	}
 
-	// searchName is the index of the last element in the slice.
-	//searchName := pathComponents[len(pathComponents)-1]
+	var countrySearchedFor []Country
+	// adds country searched for in the slice
+	countrySearchedFor = append(countrySearchedFor, getCountryInfo(w, searchCountryName)...)
+	// uses the getBorderOfCountry-function to get the bordering countries of the searched for country, and then uses
+	// the BorderCountries-function to translate the alpha-two-code of the bordering countries returned from getBorders function
+	// into countries. Then it adds these bordering countries to the same slice.
+	countrySearchedFor = append(countrySearchedFor, BorderCountries(w, getBordersOfCountry(w, searchCountryName))...)
+
+	// gets all the universities that matches with the searchUniName
+	var uni = getUniversityInfo(searchUniName, w)
+
+	// combines the data of the country that was searched for and the data of the uni that was searched for.
+	var combinedData = combineData(countrySearchedFor, dataOfUnis(uni))
+
+	w.Header().Add("content-type", "application/json")
+
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "\t")
+	err := encoder.Encode(combinedData)
+	if err != nil {
+		http.Error(w, "ERROR encoding.", http.StatusInternalServerError)
+		return
+	}
 
 	http.Error(w, "", http.StatusOK)
 	fmt.Println(r.URL.Path)
 
 }
 
+// function that combines the data from the university and the country.
+func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
+	var combinedData []CombinedStruct
+	for i := range uniInfo {
+		for j := range countryInfo {
+			if uniInfo[i].Isocode == countryInfo[j].Cca2 {
+				combinedData = append(combinedData, CombinedStruct{
+					Name:      uniInfo[i].Name,
+					Country:   uniInfo[i].Country,
+					TwoCode:   uniInfo[i].Isocode,
+					WebPages:  uniInfo[i].Webpages,
+					Languages: countryInfo[j].Languages,
+					Map:       countryInfo[j].Maps.OpenStreetMaps,
+				})
+			}
+		}
+	}
+
+	return combinedData
+}
+
+// checks if a country is in the slice. If the country is not in the slice, it gets added. If it already is the check is set to true.
+func checkCountries(w http.ResponseWriter, countries []Country, universities []University) []Country {
+	var check = false
+	for i := range universities {
+		check = false
+		for range countries {
+			// checks if the alpha-two-code of the university matches the cca2 of the country
+			if universities[i].Isocode == countries[i].Cca2 {
+				check = true
+			}
+		}
+		if !check {
+			countries = append(countries, getCountryInfo(w, universities[i].Country)...)
+		}
+	}
+	return countries
+}
+
+// function for getting the information about a country from the api
 func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 
-	// builds the url to search for the requested country
+	// builds the url to search for the requested country in the api
 	requestedCountry := "https://restcountries.com/v3.1/name/" + countryName + "?fields=name,languages,maps,cca2"
 	// makes an HTTP GET request to an external API endpoint
 	responseCountry, err := http.Get(requestedCountry)
@@ -68,21 +136,11 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 // functions that finds the borders of a country in iso code format
 func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 
-	url1 := "https://restcountries.com/v3.1/name/"
-	url2 := "?fields=borders"
-	var buildString strings.Builder
-
-	// building the url with the country name
-	buildString.WriteString(url1)
-	buildString.WriteString(countryName)
-	buildString.WriteString(url2)
-
-	// can be done like this instead
-	//requestedCountry := "http://universities.hipolabs.com/search?name=" + countryName + "?fields=borders"
+	// builds the url to get the bordering countries of the requested country from the api
+	requestedCountry := "https://restcountries.com/v3.1/name/" + countryName + "?fields=borders"
 
 	// makes an HTTP GET request to an external API endpoint
-	//resp2, err := http.Get(requestedCountry)
-	resp, err := http.Get(buildString.String())
+	resp, err := http.Get(requestedCountry)
 	if err != nil {
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)
 		return nil
@@ -106,8 +164,6 @@ func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 	return response
 
 }
-
-// function that finds all universities in the countries
 
 // BorderCountries is a function that turns the alpha-two-code of countries into countries.
 func BorderCountries(w http.ResponseWriter, borders []Borders) []Country {
@@ -138,20 +194,11 @@ func BorderCountries(w http.ResponseWriter, borders []Borders) []Country {
 // Function that finds countries based on the alpha-two-code of the country.
 func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
 
-	url1 := "https://restcountries.com/v3.1/alpha/"
-	url2 := "?fields=name,languages,maps,cca2"
-	var buildString strings.Builder
+	// builds the url to get the country that matches the alpha-two-code from the api
+	requestedCountry := "https://restcountries.com/v3.1/alpha/" + alpha2Code + "?fields=name,languages,maps,cca2"
 
-	// building the url with the country name
-	buildString.WriteString(url1)
-	buildString.WriteString(alpha2Code)
-	buildString.WriteString(url2)
-
-	//requestedCountry := "https://restcountries.com/v3.1/alpha/" + alpha2Code + "?fields=name,languages,maps,cca2"
-
-	//resp2, err := http.Get(requestedCountry)
 	// makes an HTTP GET request to an external API endpoint
-	resp, err := http.Get(buildString.String())
+	resp, err := http.Get(requestedCountry)
 	// handling errors
 	if err != nil {
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)

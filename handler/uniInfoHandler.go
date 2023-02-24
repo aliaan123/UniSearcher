@@ -30,6 +30,7 @@ returns the unmarshalled JSON data as a slice of objects of type "UniFromHipo".
 */
 func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 
+	// builds the url to the get information about the universities in the requested country from the api
 	requestedUni := "http://universities.hipolabs.com/search?name=" + searchName
 	responseUni, err := http.Get(requestedUni)
 	if err != nil {

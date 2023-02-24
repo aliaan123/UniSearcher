@@ -23,8 +23,8 @@ type UniFromHipo struct {
 type CombinedStruct struct {
 	Name      string            `json:"name"`
 	Country   string            `json:"country"`
-	TwoCode   string            `json:"alpha_two_code"`
-	Domains   []string          `json:"domains"`
+	TwoCode   string            `json:"isocode"`
+	WebPages  []string          `json:"webpages"`
 	Languages map[string]string `json:"languages"`
 	Map       string            `json:"maps"`
 }

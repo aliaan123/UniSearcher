@@ -22,7 +22,7 @@ func main() {
 	http.HandleFunc("/", handler.DefaultHandler)
 	log.Println("Starting uniInfoHandler function.")
 	http.HandleFunc(handler.UNI_INFO_PATH, handler.UniInfoHandler)
-	//http.HandleFunc(handler.NEIGHBOR_UNIS_PATH, handler.NeighbourUnisHandler)
+	http.HandleFunc(handler.NEIGHBOR_UNIS_PATH, handler.NeighbourUnisHandler)
 	//http.HandleFunc(handler.DIAG_PATH, handler.diagHandler)
 
 	// Start server
