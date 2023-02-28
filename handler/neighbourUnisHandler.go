@@ -11,8 +11,10 @@ import (
 
 // TODO : 1. fix limit i url
 // 		  2. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
-//		  3. skriv README fil
-//        4. fix language og maps i UNIVERSITY	##FIXED
+//		  3. skriv README
+//        4. country API should not include the country that was searched for.  ## FIXED
+//        5. Gjør diagHandler endpoint
+//        6. fix language og maps i UNIVERSITY	##FIXED
 
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -39,6 +41,7 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 	var countrySearchedFor []Country
 	// adds country searched for in the slice
 	countrySearchedFor = append(countrySearchedFor, getCountryInfo(w, searchCountryName)...)
+	//removeCountrySearchedFor()
 	// uses the getBorderOfCountry-function to get the bordering countries of the searched for country, and then uses
 	// the BorderCountries-function to translate the alpha-two-code of the bordering countries returned from getBorders function
 	// into countries. Then it adds these bordering countries to the same slice.
@@ -46,9 +49,10 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
 	// gets all the universities that matches with the searchUniName
 	var uni = getUniversityInfo(searchUniName, w)
-
+	// filters out universities that are in the given country.
+	var uniFiltered = removeCountrySearchedFor(uni, searchCountryName)
 	// combines the data of the country that was searched for and the data of the uni that was searched for.
-	var combinedData = combineData(countrySearchedFor, dataOfUnis(uni))
+	var combinedData = combineData(countrySearchedFor, dataOfUnis(uniFiltered))
 
 	w.Header().Add("content-type", "application/json")
 
@@ -86,6 +90,17 @@ func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
 	}
 
 	return combinedData
+}
+
+// function for filtering out the country that was searched for, so that universities from the given country is not included
+func removeCountrySearchedFor(universities []UniFromHipo, countrySearchedFor string) []UniFromHipo {
+	var filteredUnis []UniFromHipo
+	for i := range universities {
+		if universities[i].Country != countrySearchedFor {
+			filteredUnis = append(filteredUnis, universities[i])
+		}
+	}
+	return filteredUnis
 }
 
 // PUTTA INN []UNIVERSITY ISTEDET FOR UNIFROMHIPO FOR Å TESTE: FJERN OM IKKEFUNKER.
