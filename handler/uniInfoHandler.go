@@ -30,6 +30,7 @@ returns the unmarshalled JSON data as a slice of objects of type "UniFromHipo".
 */
 func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 
+	searchName = strings.ReplaceAll(searchName, " ", "%20")
 	// builds the url to the get information about the universities in the requested country from the api
 	requestedUni := "http://universities.hipolabs.com/search?name=" + searchName
 	responseUni, err := http.Get(requestedUni)
@@ -96,14 +97,6 @@ func dataOfUnis(unis []UniFromHipo) []University {
 		currentUni.Isocode = uni.AlphaTwoCode
 		currentUni.Webpages = uni.WebPages
 		currentUni.Country = uni.Country
-		/*
-			for _, s := range restCountries {
-				if s.Country == r.Country {
-					tempU.Languages = s.Languages
-					tempU.Maps = s.Maps
-				}
-			}
-		*/
 		dataOfUnis = append(dataOfUnis, currentUni)
 	}
 
@@ -124,37 +117,63 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// splits the path into components.
 	pathComponents := strings.Split(r.URL.Path, "/")
 	// Expects the path to have exactly 5 segments
-	if len(pathComponents) != 5 {
+	if len(pathComponents) < 5 || len(pathComponents) > 5 {
 		http.Error(w, "Malformed URL. Expecting format ../name", http.StatusBadRequest)
 		log.Println("Malformed URL in request.")
 		return
 	}
 
 	// searchName is the index of the last element in the slice.
-	searchName := pathComponents[len(pathComponents)-1]
+	searchName := strings.ReplaceAll(pathComponents[len(pathComponents)-1], " ", "%20")
 
 	unisInfo := getUniversityInfo(searchName, w)
-	if unisInfo == nil {
-		http.Error(w, "No data found", http.StatusInternalServerError)
+	if unisInfo == nil || len(unisInfo) == 0 {
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
-	countries := getCountries(unisInfo)
+	var countries []Country
+	//countries := getCountries(unisInfo)
+	countries = append(countries, getCountryInfo(w, unisInfo[0].Country)...)
+
+	// TESTER; FJERN OM DET IKKEFUNKER
+	dataOfUniversity := dataOfUnis(unisInfo)
+	if dataOfUniversity == nil {
+		http.Error(w, "Could not put together data", http.StatusInternalServerError)
+		return
+	}
+
+	//countries = checkCountries(w, countries, dataOfUnis(unisInfo)) KAN SKRIVES SÅNN ISTEDET
+	countries = checkCountries(w, countries, dataOfUniversity) // BYTT DATAOFUNI TIL UNISINFO OM IKKE FUNGER
 	if countries == nil {
 		http.Error(w, "Could not put together data", http.StatusInternalServerError)
 		return
 	}
 
-	dataOfUnis := dataOfUnis(unisInfo)
-	if dataOfUnis == nil {
+	// combines the data of the country that was searched for and the data of the uni that was searched for.
+	var combinedData = combineData(countries, dataOfUnis(unisInfo))
+	if combinedData == nil {
 		http.Error(w, "Could not put together data", http.StatusInternalServerError)
 		return
 	}
 
+	/*
+		if limit == 0 || limit >= len(unisInfo) {
+			limit = len(unisInfo)
+		}
+		// if the list is longer then the limit then the list will be appended to be the correct length
+		if len(unisInfo) >= limit {
+
+			unisInfo = append(unisInfo[:limit], unisInfo[len(unisInfo):]...)
+		}
+
+	*/
+
 	w.Header().Add("content-type", "application/json")
 	encoder := json.NewEncoder(w)
 
-	err := encoder.Encode(dataOfUnis)
+	err := encoder.Encode(combinedData)
+	//err := encoder.Encode(dataOfUniversity)
 	if err != nil {
 		http.Error(w, "Error during encoding", http.StatusInternalServerError)
 		return

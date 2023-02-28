@@ -12,7 +12,7 @@ import (
 // TODO : 1. fix limit i url
 // 		  2. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
 //		  3. skriv README fil
-//        4. fix language og maps i UNIVERSITY
+//        4. fix language og maps i UNIVERSITY	##FIXED
 
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -28,9 +28,9 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The country name that is searched for is at the second last index of the URL.
-	searchCountryName := pathComponents[expectedLength-2]
+	searchCountryName := strings.ReplaceAll(pathComponents[expectedLength-2], " ", "%20")
 	// The university name that is searched for is at the last index of the URL.
-	searchUniName := pathComponents[expectedLength-1]
+	searchUniName := strings.ReplaceAll(pathComponents[expectedLength-1], " ", "%20")
 
 	if searchCountryName == "" || searchUniName == "" {
 		http.Error(w, "Country name and partial or complete name of university must be given", http.StatusBadRequest)
@@ -52,6 +52,7 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("content-type", "application/json")
 
+	// encode the combined data in json
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "\t")
 	err := encoder.Encode(combinedData)
@@ -65,11 +66,12 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// function that combines the data from the university and the country.
+// function that combines the data from the university and the country
 func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
 	var combinedData []CombinedStruct
 	for i := range uniInfo {
 		for j := range countryInfo {
+			// matches the alpha-two-code of the university to the cca2 code of the country to match the country to the university.
 			if uniInfo[i].Isocode == countryInfo[j].Cca2 {
 				combinedData = append(combinedData, CombinedStruct{
 					Name:      uniInfo[i].Name,
@@ -86,14 +88,16 @@ func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
 	return combinedData
 }
 
+// PUTTA INN []UNIVERSITY ISTEDET FOR UNIFROMHIPO FOR Å TESTE: FJERN OM IKKEFUNKER.
 // checks if a country is in the slice. If the country is not in the slice, it gets added. If it already is the check is set to true.
 func checkCountries(w http.ResponseWriter, countries []Country, universities []University) []Country {
 	var check = false
 	for i := range universities {
 		check = false
-		for range countries {
+		for j := range countries {
 			// checks if the alpha-two-code of the university matches the cca2 of the country
-			if universities[i].Isocode == countries[i].Cca2 {
+			if universities[i].Isocode == countries[j].Cca2 {
+				j = len(countries)
 				check = true
 			}
 		}
@@ -113,18 +117,22 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 	responseCountry, err := http.Get(requestedCountry)
 	if err != nil {
 		http.Error(w, "Error in creating Get-request. Cannot reach service.", http.StatusServiceUnavailable)
+		return nil
 	}
+
+	//defer responseCountry.Body.Close()
 
 	// reads the response from the API endpoint
 	bodyOfCountry, err := ioutil.ReadAll(responseCountry.Body)
 	if err != nil {
 		http.Error(w, "Unexpected format", http.StatusServiceUnavailable)
+		return nil
 	}
 
 	// unmarshal the JSON data into a slice of struct of type Country
 	var response []Country
-	err2 := json.Unmarshal(bodyOfCountry, &response)
-	if err2 != nil {
+	err = json.Unmarshal(bodyOfCountry, &response)
+	if err != nil {
 		log.Fatal("Error when unmarshalling:", err)
 	}
 

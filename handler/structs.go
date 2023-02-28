@@ -2,12 +2,13 @@ package handler
 
 // University struct that defines the fields used from the api university
 type University struct {
-	Name      string                 `json:"name"`
-	Country   string                 `json:"country"`
-	Isocode   string                 `json:"isocode"`
-	Webpages  []string               `json:"webpages"`
-	Languages map[string]interface{} `json:"languages"`
-	Maps      []string               `json:"map"`
+	Name     string   `json:"name"`
+	Country  string   `json:"country"`
+	Isocode  string   `json:"isocode"`
+	Webpages []string `json:"webpages"`
+	//Languages map[string]interface{} `json:"languages"`
+	Languages map[string]string `json:"languages"`
+	Maps      Map               `json:"map"`
 }
 
 // University struct that defines fields of the respone given by the api.
