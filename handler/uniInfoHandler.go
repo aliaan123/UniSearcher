@@ -9,109 +9,63 @@ import (
 	"strings"
 )
 
-/*
-The function takes in two parameters, a string variable "searchName" and an HTTP response writer "w",
-and returns a slice of objects of the type "UniFromHipo".
-
-Inside the function, it first constructs a URL string using the "searchName" parameter and
-calls the "http.Get()" function to send an HTTP GET request to the API endpoint at the constructed URL.
-
-If the request fails, it returns an HTTP error message using the "http.Error()" function,
-with an HTTP status code of "http.StatusServiceUnavailable". If the request is successful,
-it reads the response body using "ioutil.ReadAll()", which returns a byte array representing the response body.
-
-The function then creates an empty slice of "UniFromHipo" objects and
-unmarshal the byte array response body into this slice using the "json.Unmarshal()" function.
-If there are any errors during the unmarshalling process, the function will panic.
-
-Finally, the function returns the populated slice of "UniFromHipo" objects.
-This function essentially makes an HTTP request to the given API endpoint and
-returns the unmarshalled JSON data as a slice of objects of type "UniFromHipo".
-*/
+// getUniversityInfo is a function which makes HTTP request to the given API endpoint and, returns the unmarshalled JSON data as a slice of type "UniFromHipo".
 func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 
+	// removes the spaces from the search string
 	searchName = strings.ReplaceAll(searchName, " ", "%20")
 	// builds the url to the get information about the universities in the requested country from the api
 	requestedUni := "http://universities.hipolabs.com/search?name=" + searchName
+	// makes an HTTP GET request to an external API endpoint
 	responseUni, err := http.Get(requestedUni)
+	// handles errors if request fails.
 	if err != nil {
 		http.Error(w, "Error in creating Get-request. Cannot reach service.", http.StatusServiceUnavailable)
 	}
 
+	// reads the response body from the API endpoint, a byte array representing the response body is returned.
 	bodyOfUniversity, err := ioutil.ReadAll(responseUni.Body)
+	// handles errors if reading the response fails
 	if err != nil {
 		http.Error(w, "Unexpected format", http.StatusServiceUnavailable)
 	}
 
+	// creates an empty slice of "UniFromHipo" objects
 	var universities []UniFromHipo
+	// unmarshal the JSON data (the byte array response body) into a slice of type UniFromHipo
 	err2 := json.Unmarshal(bodyOfUniversity, &universities)
+	// handle errors if the unmarshal fails
 	if err2 != nil {
 		log.Fatal("Error when unmarshalling:", err)
 	}
 
+	// returns a populated slice of UniFromHipo objects as the function output
 	return universities
 
 }
 
-/*
-The getCountries function takes in a slice of UniFromHipo structs as input and
-returns a slice of strings that represents the countries in which those universities are located.
-It does this by iterating over the input slice of universities and checking if the country of each university is already in the list of countries.
-If the country is not in the list, it is added to the list of countries.
-The function uses a boolean variable isFound to keep track of whether a country has been found in the list of countries or not.
-The isFound variable is reset to false at the end of each iteration to ensure that the function works correctly.
-*/
-func getCountries(unis []UniFromHipo) []string {
-	var countries []string
-	var isFound bool
-
-	for _, u := range unis {
-		country := u.Country
-		for _, c := range countries {
-			if country == c {
-				isFound = true
-			}
-		}
-		if !isFound {
-			countries = append(countries, country)
-		}
-		isFound = false
-	}
-	return countries
-}
-
-/*
-The dataOfUnis function takes a slice of UniFromHipo struct and converts it into a slice of University struct,
-which is a custom struct defined somewhere in the code that's not shown here. It creates an empty slice dataOfUnis of type University.
-(Slice is similar to an array, but unlike arrays, slices are dynamically sized, meaning their size can grow or shrink as needed)
-
-For each element in the unis slice, it creates a new tempUni variable of type University,
-sets its Name, Iso-code, Webpages and Country fields based on the corresponding fields of the uni element.
-Then it appends the tempUni to the dataOfUnis slice.
-*/
+// The function dataOfUnis takes a slice of UniFromHipo struct, and converts it into a slice of University struct.
 func dataOfUnis(unis []UniFromHipo) []University {
+	// create empty slice of type University struct
 	var dataOfUnis []University
+	// create a temporary variable of type University, objects which are appended to the slice
 	var currentUni University
+	// loops through the slice of UniFromHipo which was taken in as parameter.
+	// For each element in the unis slice, a new variable of type University is created,
+	// and its name, alphaTwoCode, webpages and country fields are set to the corresponding fields of the uni element.
 	for _, uni := range unis {
 		currentUni.Name = uni.Name
 		currentUni.Isocode = uni.AlphaTwoCode
 		currentUni.Webpages = uni.WebPages
 		currentUni.Country = uni.Country
+		// appends the temporary object to the dataOfUnis slice.
 		dataOfUnis = append(dataOfUnis, currentUni)
 	}
 
 	return dataOfUnis
 }
 
-/*
-This function is an HTTP handler that takes a request and returns a JSON response with information about universities that match a search name.
-The handler first checks that the URL path contains exactly 5 segments and extracts the search name from the last segment.
-It then uses helper functions to retrieve and process university data, including finding the countries in which
-the universities are located and formatting the data as a slice of University structs.
-
-Finally, the function sets the content type header to application/json, encodes the university data as JSON,
-and writes the response to the client. If an error occurs at any stage, the function returns an error status code with a corresponding error message.
-*/
+// UniInfoHandler is a function, an HTTP handler that makes a request to a given API endpoint, and returns a JSON response of info about unis.
 func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// splits the path into components.
@@ -123,7 +77,7 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// searchName is the index of the last element in the slice.
+	// gets the searchName from the URL, searchName is the last segment of the URL. Removes the spaces from the search string.
 	searchName := strings.ReplaceAll(pathComponents[len(pathComponents)-1], " ", "%20")
 
 	unisInfo := getUniversityInfo(searchName, w)
@@ -133,18 +87,15 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var countries []Country
-	//countries := getCountries(unisInfo)
 	countries = append(countries, getCountryInfo(w, unisInfo[0].Country)...)
 
-	// TESTER; FJERN OM DET IKKEFUNKER
 	dataOfUniversity := dataOfUnis(unisInfo)
 	if dataOfUniversity == nil {
 		http.Error(w, "Could not put together data", http.StatusInternalServerError)
 		return
 	}
 
-	//countries = checkCountries(w, countries, dataOfUnis(unisInfo)) KAN SKRIVES SÅNN ISTEDET
-	countries = checkCountries(w, countries, dataOfUniversity) // BYTT DATAOFUNI TIL UNISINFO OM IKKE FUNGER
+	countries = checkCountries(w, countries, dataOfUniversity)
 	if countries == nil {
 		http.Error(w, "Could not put together data", http.StatusInternalServerError)
 		return
@@ -157,23 +108,10 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*
-		if limit == 0 || limit >= len(unisInfo) {
-			limit = len(unisInfo)
-		}
-		// if the list is longer then the limit then the list will be appended to be the correct length
-		if len(unisInfo) >= limit {
-
-			unisInfo = append(unisInfo[:limit], unisInfo[len(unisInfo):]...)
-		}
-
-	*/
-
 	w.Header().Add("content-type", "application/json")
 	encoder := json.NewEncoder(w)
 
 	err := encoder.Encode(combinedData)
-	//err := encoder.Encode(dataOfUniversity)
 	if err != nil {
 		http.Error(w, "Error during encoding", http.StatusInternalServerError)
 		return
