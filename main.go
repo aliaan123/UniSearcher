@@ -18,12 +18,10 @@ func main() {
 	}
 
 	// Set up handler endpoints
-	log.Println("Starting defaultHandler function.")
 	http.HandleFunc("/", handler.DefaultHandler)
-	log.Println("Starting uniInfoHandler function.")
 	http.HandleFunc(handler.UNI_INFO_PATH, handler.UniInfoHandler)
 	http.HandleFunc(handler.NEIGHBOR_UNIS_PATH, handler.NeighbourUnisHandler)
-	//http.HandleFunc(handler.DIAG_PATH, handler.diagHandler)
+	http.HandleFunc(handler.DIAG_PATH, handler.DiagHandler)
 
 	// Start server
 	log.Println("Starting server on port " + port + " ...")
@@ -31,12 +29,3 @@ func main() {
 	log.Fatal(http.ListenAndServe(port, nil))
 
 }
-
-/*
-
-På slutten så må dette leveres
- - gitlab (NTNU) link
- - github private repo link
- - render project link
-
-*/

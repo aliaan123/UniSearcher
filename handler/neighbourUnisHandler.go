@@ -12,7 +12,6 @@ import (
 // TODO : 1. fix limit i url
 // 		  2. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
 //		  3. skriv README
-//        4. Gjør diagHandler endpoint
 
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 

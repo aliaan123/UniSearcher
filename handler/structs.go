@@ -2,11 +2,10 @@ package handler
 
 // University struct that defines the fields used from the api university
 type University struct {
-	Name     string   `json:"name"`
-	Country  string   `json:"country"`
-	Isocode  string   `json:"isocode"`
-	Webpages []string `json:"webpages"`
-	//Languages map[string]interface{} `json:"languages"`
+	Name      string            `json:"name"`
+	Country   string            `json:"country"`
+	Isocode   string            `json:"isocode"`
+	Webpages  []string          `json:"webpages"`
 	Languages map[string]string `json:"languages"`
 	Maps      Map               `json:"map"`
 }
@@ -21,6 +20,7 @@ type UniFromHipo struct {
 	WebPages      []string `json:"web_pages"`
 }
 
+// CombinedStruct used for combining the struct of the University and Country
 type CombinedStruct struct {
 	Name      string            `json:"name"`
 	Country   string            `json:"country"`
@@ -30,6 +30,7 @@ type CombinedStruct struct {
 	Map       string            `json:"maps"`
 }
 
+// Country struct that defines the fields for a country
 type Country struct {
 	Names     Name              `json:"name"`
 	Languages map[string]string `json:"languages"`
@@ -37,24 +38,28 @@ type Country struct {
 	Cca2      string            `json:"cca2"`
 }
 
+// Map struct that defines the fields for a map, is used in Country
 type Map struct {
 	GoogleMaps     string `json:"googleMaps"`
 	OpenStreetMaps string `json:"openStreetMaps"`
 }
 
+// Name struct that defines the fields for a name, is used in Country
 type Name struct {
 	Common      string            `json:"common"`
 	Official    string            `json:"official"`
 	NativeNames map[string]string `json:"native_names"`
 }
 
+// Borders struct
 type Borders struct {
 	Borders []string `json:"borders"`
 }
 
+// DiagStruct that defines the fields for the diag endpoint
 type DiagStruct struct {
-	Universitiesapi string  `json:"universitiesapi"`
-	Countriesapi    string  `json:"countriesapi"`
+	UniversitiesApi string  `json:"universitiesapi"`
+	CountriesApi    string  `json:"countriesapi"`
 	Version         string  `json:"version"`
 	Uptime          float64 `json:"uptime"`
 }
