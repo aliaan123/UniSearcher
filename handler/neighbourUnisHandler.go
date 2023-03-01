@@ -12,10 +12,7 @@ import (
 // TODO : 1. fix limit i url
 // 		  2. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
 //		  3. skriv README
-//        4. country API should not include the country that was searched for.  ## FIXED
-//        5. Gjør diagHandler endpoint
-//        6. fix language og maps i UNIVERSITY	##FIXED
-//        7. Update dokumentasjon
+//        4. Gjør diagHandler endpoint
 
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -53,8 +50,13 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 	var uni = getUniversityInfo(searchUniName, w)
 	// filters out universities that are in the given searched for country.
 	var uniFiltered = filterOutCountrySearchedFor(uni, searchCountryName)
+
+	//var countriesFiltered = filterOutCountrySearchedFor2(countrySearchedFor, searchCountryName) TEST
+
 	// combines the data of the country that was searched for and the data of the uni that was searched for.
 	var combinedData = combineData(countrySearchedFor, dataOfUnis(uniFiltered))
+
+	//var combinedData = combineData(countriesFiltered, dataOfUnis(uni)) TEST
 
 	w.Header().Add("content-type", "application/json")
 
@@ -97,8 +99,11 @@ func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
 // function for filtering out the country that was searched for, so that universities from the given country is not included
 func filterOutCountrySearchedFor(universities []UniFromHipo, countrySearchedFor string) []UniFromHipo {
 	var filteredUnis []UniFromHipo
+
+	// removes the spaces from the search string
+	countrySearchedFor = strings.ReplaceAll(countrySearchedFor, " ", "%20")
 	for i := range universities {
-		if universities[i].Country != countrySearchedFor {
+		if strings.ToLower(universities[i].Country) != strings.ToLower(countrySearchedFor) {
 			filteredUnis = append(filteredUnis, universities[i])
 		}
 	}
@@ -132,6 +137,8 @@ func checkCountries(w http.ResponseWriter, countries []Country, universities []U
 // function for getting the information about a country from the api
 func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 
+	// removes the spaces from the search string
+	countryName = strings.ReplaceAll(countryName, " ", "%20")
 	// builds the url to search for the requested country in the api
 	requestedCountry := "https://restcountries.com/v3.1/name/" + countryName + "?fields=name,languages,maps,cca2"
 	// makes an HTTP GET request to an external API endpoint
@@ -157,7 +164,8 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 	err = json.Unmarshal(bodyOfCountry, &response)
 	// handle errors if the unmarshal fails
 	if err != nil {
-		log.Fatal("Error when unmarshalling:", err)
+		log.Fatal("Error when unmarshalling3:", err)
+		return nil
 	}
 
 	// returns that struct as the function output
@@ -168,6 +176,8 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 // functions that finds the borders of a country in iso code format
 func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 
+	// removes the spaces from the search string
+	countryName = strings.ReplaceAll(countryName, " ", "%20")
 	// builds the url to get the bordering countries of the requested country from the api
 	requestedCountry := "https://restcountries.com/v3.1/name/" + countryName + "?fields=borders"
 	// makes an HTTP GET request to an external API endpoint
@@ -191,7 +201,7 @@ func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 	err2 := json.Unmarshal(respBody, &response)
 	// handle errors if the unmarshal fails
 	if err2 != nil {
-		log.Fatal("Error when unmarshalling:", err)
+		log.Fatal("Error when unmarshalling1:", err)
 	}
 
 	// returns that slice as the function output
@@ -252,7 +262,7 @@ func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
 	err2 := json.Unmarshal(respBody, &response)
 	// handles errors if the unmarshal fails.
 	if err2 != nil {
-		log.Fatal("Error when unmarshalling:", err)
+		log.Fatal("Error when unmarshalling2:", err)
 		return Country{}
 	}
 
