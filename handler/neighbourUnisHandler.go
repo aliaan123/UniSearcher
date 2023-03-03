@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
-// TODO : 1. fix limit i url
-// 		  2. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
-//		  3. skriv README
+// TODO :
+// 		  1. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
+//		  2. skriv README
 
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -47,18 +47,40 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
 	// gets all the universities that matches with the searchUniName
 	var uni = getUniversityInfo(searchUniName, w)
+
 	// filters out universities that are in the given searched for country.
 	var uniFiltered = filterOutCountrySearchedFor(uni, searchCountryName)
-
-	//var countriesFiltered = filterOutCountrySearchedFor2(countrySearchedFor, searchCountryName) TEST
 
 	// combines the data of the country that was searched for and the data of the uni that was searched for.
 	var combinedData = combineData(countrySearchedFor, dataOfUnis(uniFiltered))
 
-	//var combinedData = combineData(countriesFiltered, dataOfUnis(uni)) TEST
+	var limit int
+
+	if r.URL.RawQuery != "" {
+		partsOfQuery := strings.Split(r.URL.RawQuery, "=")
+		if len(partsOfQuery) == 2 && partsOfQuery[0] == "limit" {
+			limit, _ = strconv.Atoi(partsOfQuery[1])
+			if limit <= 0 {
+				http.Error(w, "Limit should be a positive integer.", http.StatusBadRequest)
+				return
+			} else if limit > 100 {
+				http.Error(w, "Limit should be less than or equal to 100.", http.StatusBadRequest)
+				return
+			}
+		}
+	} else {
+		limit = 0
+	}
+
+	if limit == 0 {
+		limit = len(combinedData)
+	}
+
+	if len(combinedData) >= limit {
+		combinedData = append(combinedData[:limit], combinedData[len(combinedData):]...)
+	}
 
 	w.Header().Add("content-type", "application/json")
-
 	// encode the combined data in json
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "\t")
@@ -163,7 +185,8 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 	err = json.Unmarshal(bodyOfCountry, &response)
 	// handle errors if the unmarshal fails
 	if err != nil {
-		log.Fatal("Error when unmarshalling3:", err)
+		http.Error(w, "Error when unmarshalling. Unexpected format", http.StatusServiceUnavailable)
+		//log.Fatal("Error when unmarshalling3:", err)
 		return nil
 	}
 
@@ -200,7 +223,7 @@ func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 	err2 := json.Unmarshal(respBody, &response)
 	// handle errors if the unmarshal fails
 	if err2 != nil {
-		log.Fatal("Error when unmarshalling1:", err)
+		http.Error(w, "Error when unmarshalling. Unexpected format", http.StatusServiceUnavailable)
 	}
 
 	// returns that slice as the function output
@@ -251,7 +274,7 @@ func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
 	respBody, err := ioutil.ReadAll(resp.Body)
 	// handle errors if reading the response body fails
 	if err != nil {
-		http.Error(w, "Unexpected format", http.StatusServiceUnavailable)
+		http.Error(w, "Error when reading response body. Unexpected format", http.StatusServiceUnavailable)
 		return Country{}
 	}
 
@@ -261,7 +284,8 @@ func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
 	err2 := json.Unmarshal(respBody, &response)
 	// handles errors if the unmarshal fails.
 	if err2 != nil {
-		log.Fatal("Error when unmarshalling2:", err)
+		http.Error(w, "Error when unmarshalling. Unexpected format", http.StatusServiceUnavailable)
+		//log.Fatal("Error when unmarshalling2:", err)
 		return Country{}
 	}
 

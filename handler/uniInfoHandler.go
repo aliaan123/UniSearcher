@@ -15,7 +15,7 @@ func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 	// removes the spaces from the search string
 	searchName = strings.ReplaceAll(searchName, " ", "%20")
 	// builds the url to the get information about the universities in the requested country from the api
-	requestedUni := "http://universities.hipolabs.com/search?name=" + searchName
+	requestedUni := "http://universities.hipolabs.com/search?name_contains=" + searchName
 	// makes an HTTP GET request to an external API endpoint
 	responseUni, err := http.Get(requestedUni)
 	// handles errors if request fails.

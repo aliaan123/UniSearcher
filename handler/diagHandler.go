@@ -49,7 +49,7 @@ func uniAPIstatus(w http.ResponseWriter) string {
 	response, err := http.Get("http://universities.hipolabs.com/")
 	// handles errors if request fails.
 	if err != nil {
-		http.Error(w, "Bad Gateway", http.StatusBadGateway)
+		http.Error(w, "Error when getting response from http://universities.hipolabs.com/. The API might be down at the moment.", http.StatusInternalServerError)
 	}
 	// returns the HTTP status code of the response
 	return response.Status
@@ -62,7 +62,7 @@ func countryAPIstatus(w http.ResponseWriter) string {
 	response, err := http.Get("https://restcountries.com/")
 	// handles errors if request fails.
 	if err != nil {
-		http.Error(w, "Bad Gateway", http.StatusBadGateway)
+		http.Error(w, "Error when getting response from https://restcountries.com/. The API might be down at the moment", http.StatusInternalServerError)
 	}
 	// returns the HTTP status code of the response
 	return response.Status
