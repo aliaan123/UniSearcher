@@ -1,0 +1,42 @@
+name: Pushing
+
+on:
+  push:
+    branches: [master, main]
+
+jobs:
+  copy-file:
+    runs-on: ubuntu-latest
+    # If you are using GitHub beta version, you may not have environment options. Instead, you can define repository
+    # level secrets from your GitHub repo settings => "secrets and variables"
+    # Then you need to comment away the following  line: environment: MyEnvironmentName.
+    # If GitHub can't find an environment in yaml file, will read repository level "secrets and variables".
+   # environment: MyEnvironmentName # The GitHub Environment in which we have set up for secrets (tokens, passwords, ...)
+    steps:
+      - name: Checkout # This step is a security check default by the GitHub. Use it once at each job.
+        uses: actions/checkout@v2 # predefined by GitHub
+
+      - name: Push to NTNU GitLab Workspace  # An optional Name
+        env:  # Importing needed variables defined in the environment or repository level "secrets and variables".
+          TOKEN: ${{ secrets.GITLABTOKEN}}  # Defining a variable names TOKEN in which holds the GITLAB_TOKEN defined
+          # in the environment(MyEnvironmentName) -> secrets
+          # For the first push, An owner token is needed.
+        run: |
+          echo "Pushing to NTNU GitLab-Work-Space:" # An example of log message to be checked in the GitHub action's section
+          # We push code to Github first, and Github pushes using its own bash
+          # It be a shallow repository (i.e., only the commits needed to reflect the latest state) and thus not have the full commit history
+          # of the original repository. 
+          # You need to 'unshallow' the github repo (i.e., retrieve the full commit history) only for one time in the first job.
+          git fetch --unshallow "https://github.com/aliaan123/assignment1.git"
+          git config user.name "aliaanna"
+          git config user.email "aliaanna@stud.ntnu.no"
+          # If there is no branch, create one using the code:
+          # Usually when we initing a git repo, a master branch is generated automatically. 
+          # git init --initial-branch=main 
+          git remote set-url origin "https://oauth2:$TOKEN@git.gvk.idi.ntnu.no/course/prog2005/prog2005-2023-workspace/aliaan/assignment-1.git"
+          # git remote rename origin old-origin
+          # git push -u origin main
+          # git config pull.rebase false # You have divergent branches and need to specify how to reconcile them.
+          # git pull origin main --allow-unrelated-histories # This is because of initialization with Readme which leads to diverging histories
+          git push -u origin --all  # --all pushes all branches 
+          # git push -u origin --tags # --tags All refs under refs/tags are pushed
