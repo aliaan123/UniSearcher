@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"Assignment1/constants"
+	"Assignment1/structs"
 	"Assignment1/time"
 	"encoding/json"
 	"net/http"
@@ -30,12 +32,12 @@ func DiagHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // function that creates a new DiagStruct and populates it with the status codes, version and uptime of the service, and then returns the struct
-func diagResponse(uniAPI string, countryAPI string, time float64) DiagStruct {
+func diagResponse(uniAPI string, countryAPI string, time float64) structs.DiagStruct {
 
-	diagResponses := DiagStruct{
+	diagResponses := structs.DiagStruct{
 		UniversitiesApi: uniAPI,
 		CountriesApi:    countryAPI,
-		Version:         VERSION,
+		Version:         constants.VERSION,
 		Uptime:          time,
 	}
 	return diagResponses

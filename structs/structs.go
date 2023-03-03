@@ -1,4 +1,4 @@
-package handler
+package structs
 
 // University struct that defines the fields used from the api university
 type University struct {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"Assignment1/structs"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +11,7 @@ import (
 )
 
 // getUniversityInfo is a function which makes HTTP request to the given API endpoint and, returns the unmarshalled JSON data as a slice of type "UniFromHipo".
-func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
+func getUniversityInfo(searchName string, w http.ResponseWriter) []structs.UniFromHipo {
 
 	// removes the spaces from the search string
 	searchName = strings.ReplaceAll(searchName, " ", "%20")
@@ -31,7 +32,7 @@ func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 	}
 
 	// creates an empty slice of "UniFromHipo" objects
-	var universities []UniFromHipo
+	var universities []structs.UniFromHipo
 	// unmarshal the JSON data (the byte array response body) into a slice of type UniFromHipo
 	err2 := json.Unmarshal(bodyOfUniversity, &universities)
 	// handle errors if the unmarshal fails
@@ -45,11 +46,11 @@ func getUniversityInfo(searchName string, w http.ResponseWriter) []UniFromHipo {
 }
 
 // The function dataOfUnis takes a slice of UniFromHipo struct, and converts it into a slice of University struct.
-func dataOfUnis(unis []UniFromHipo) []University {
+func dataOfUnis(unis []structs.UniFromHipo) []structs.University {
 	// create empty slice of type University struct
-	var dataOfUnis []University
+	var dataOfUnis []structs.University
 	// create a temporary variable of type University, objects which are appended to the slice
-	var currentUni University
+	var currentUni structs.University
 	// loops through the slice of UniFromHipo which was taken in as parameter.
 	// For each element in the unis slice, a new variable of type University is created,
 	// and its name, alphaTwoCode, webpages and country fields are set to the corresponding fields of the uni element.
@@ -86,7 +87,7 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var countries []Country
+	var countries []structs.Country
 	countries = append(countries, getCountryInfo(w, unisInfo[0].Country)...)
 
 	dataOfUniversity := dataOfUnis(unisInfo)

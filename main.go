@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Assignment1/constants"
 	"Assignment1/handler"
 	"log"
 	"net/http"
@@ -19,9 +20,9 @@ func main() {
 
 	// Set up handler endpoints
 	http.HandleFunc("/", handler.DefaultHandler)
-	http.HandleFunc(handler.UNI_INFO_PATH, handler.UniInfoHandler)
-	http.HandleFunc(handler.NEIGHBOR_UNIS_PATH, handler.NeighbourUnisHandler)
-	http.HandleFunc(handler.DIAG_PATH, handler.DiagHandler)
+	http.HandleFunc(constants.UNI_INFO_PATH, handler.UniInfoHandler)
+	http.HandleFunc(constants.NEIGHBOR_UNIS_PATH, handler.NeighbourUnisHandler)
+	http.HandleFunc(constants.DIAG_PATH, handler.DiagHandler)
 
 	// Start server
 	log.Println("Starting server on port " + port + " ...")

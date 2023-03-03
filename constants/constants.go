@@ -1,4 +1,4 @@
-package handler
+package constants
 
 // constants for the different paths used in the service
 const UNI_INFO_PATH = "/unisearcher/v1/uniinfo/"

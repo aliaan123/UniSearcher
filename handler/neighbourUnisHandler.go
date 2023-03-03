@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"Assignment1/constants"
+	"Assignment1/structs"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,13 +14,14 @@ import (
 // TODO :
 // 		  1. error handling hvis man feks skriver by i name istedet for country, eller hvis man typer feil
 //		  2. skriv README
+// 		  3. give error feedback to user
 
 func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 
 	// splits the path into components.
 	pathComponents := strings.Split(r.URL.Path, "/")
 	// find the expected length of the URL
-	expectedLength := len(strings.Split(NEIGHBOR_UNIS_PATH, "/")) + 1
+	expectedLength := len(strings.Split(constants.NEIGHBOR_UNIS_PATH, "/")) + 1
 
 	// expects the path to have exactly 5 segments, if it doesn't we send an error
 	if len(pathComponents) != 6 || len(pathComponents) < expectedLength || len(pathComponents) > expectedLength {
@@ -37,7 +40,7 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "partial or complete name of university and country name must be given.", http.StatusBadRequest)
 	}
 
-	var countrySearchedFor []Country
+	var countrySearchedFor []structs.Country
 	// adds country searched for in the slice
 	countrySearchedFor = append(countrySearchedFor, getCountryInfo(w, searchCountryName)...)
 	// uses the getBorderOfCountry-function to get the bordering countries of the searched for country, and then uses
@@ -96,13 +99,13 @@ func NeighbourUnisHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // function that combines the data-struct from the university and the country
-func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
-	var combinedStruct []CombinedStruct
+func combineData(countryInfo []structs.Country, uniInfo []structs.University) []structs.CombinedStruct {
+	var combinedStruct []structs.CombinedStruct
 	for i := range uniInfo {
 		for j := range countryInfo {
 			// matches the alpha-two-code of the university to the cca2 code of the country to match the country to the university.
 			if uniInfo[i].Isocode == countryInfo[j].Cca2 {
-				combinedStruct = append(combinedStruct, CombinedStruct{
+				combinedStruct = append(combinedStruct, structs.CombinedStruct{
 					Name:      uniInfo[i].Name,
 					Country:   uniInfo[i].Country,
 					TwoCode:   uniInfo[i].Isocode,
@@ -118,8 +121,8 @@ func combineData(countryInfo []Country, uniInfo []University) []CombinedStruct {
 }
 
 // function for filtering out the country that was searched for, so that universities from the given country is not included
-func filterOutCountrySearchedFor(universities []UniFromHipo, countrySearchedFor string) []UniFromHipo {
-	var filteredUnis []UniFromHipo
+func filterOutCountrySearchedFor(universities []structs.UniFromHipo, countrySearchedFor string) []structs.UniFromHipo {
+	var filteredUnis []structs.UniFromHipo
 
 	// removes the spaces from the search string
 	countrySearchedFor = strings.ReplaceAll(countrySearchedFor, " ", "%20")
@@ -132,7 +135,7 @@ func filterOutCountrySearchedFor(universities []UniFromHipo, countrySearchedFor 
 }
 
 // function that makes sure that all countries associated with unis in the universities slice are included in the countries slice
-func checkCountries(w http.ResponseWriter, countries []Country, universities []University) []Country {
+func checkCountries(w http.ResponseWriter, countries []structs.Country, universities []structs.University) []structs.Country {
 	var check = false
 	// loops through universities in the University slice
 	for i := range universities {
@@ -156,7 +159,7 @@ func checkCountries(w http.ResponseWriter, countries []Country, universities []U
 }
 
 // function for getting the information about a country from the api
-func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
+func getCountryInfo(w http.ResponseWriter, countryName string) []structs.Country {
 
 	// removes the spaces from the search string
 	countryName = strings.ReplaceAll(countryName, " ", "%20")
@@ -181,7 +184,7 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 	}
 
 	// unmarshal the JSON data (the byte array response body) into a slice of type Country
-	var response []Country
+	var response []structs.Country
 	err = json.Unmarshal(bodyOfCountry, &response)
 	// handle errors if the unmarshal fails
 	if err != nil {
@@ -196,7 +199,7 @@ func getCountryInfo(w http.ResponseWriter, countryName string) []Country {
 }
 
 // functions that finds the borders of a country in iso code format
-func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
+func getBordersOfCountry(w http.ResponseWriter, countryName string) []structs.Borders {
 
 	// removes the spaces from the search string
 	countryName = strings.ReplaceAll(countryName, " ", "%20")
@@ -218,7 +221,7 @@ func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 	}
 
 	// creates an empty slice of "Borders" objects
-	var response []Borders
+	var response []structs.Borders
 	// unmarshal the JSON data (the byte array response body) into a slice of type Borders
 	err2 := json.Unmarshal(respBody, &response)
 	// handle errors if the unmarshal fails
@@ -232,9 +235,9 @@ func getBordersOfCountry(w http.ResponseWriter, countryName string) []Borders {
 }
 
 // BorderCountries is a function that turns the alpha-two-code of countries into countries.
-func BorderCountries(w http.ResponseWriter, borders []Borders) []Country {
+func BorderCountries(w http.ResponseWriter, borders []structs.Borders) []structs.Country {
 	// empty slice of Country struct, for storing all the bordering countries of a country
-	var borderingCountries []Country
+	var borderingCountries []structs.Country
 
 	// borders, which is a slice of structs of type "Borders" is a slice
 	// containing alpha-2-codes for bordering countries of a particular country
@@ -258,7 +261,7 @@ func BorderCountries(w http.ResponseWriter, borders []Borders) []Country {
 }
 
 // Function that finds countries based on the alpha-two-code of the country.
-func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
+func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) structs.Country {
 
 	// builds the url to get the country that matches the alpha-two-code from the api
 	requestedCountry := "https://restcountries.com/v3.1/alpha/" + alpha2Code + "?fields=name,languages,maps,cca2"
@@ -267,7 +270,7 @@ func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
 	// handles errors if request fails.
 	if err != nil {
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)
-		return Country{}
+		return structs.Country{}
 	}
 
 	// reads the response body from the API endpoint, a byte array representing the response body is returned.
@@ -275,18 +278,18 @@ func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) Country {
 	// handle errors if reading the response body fails
 	if err != nil {
 		http.Error(w, "Error when reading response body. Unexpected format", http.StatusServiceUnavailable)
-		return Country{}
+		return structs.Country{}
 	}
 
 	// creates an empty slice of "Country" objects
-	var response Country
+	var response structs.Country
 	// unmarshal the JSON data (the byte array response body) into a slice of type Country
 	err2 := json.Unmarshal(respBody, &response)
 	// handles errors if the unmarshal fails.
 	if err2 != nil {
 		http.Error(w, "Error when unmarshalling. Unexpected format", http.StatusServiceUnavailable)
 		//log.Fatal("Error when unmarshalling2:", err)
-		return Country{}
+		return structs.Country{}
 	}
 
 	// returns that slice as the function output
