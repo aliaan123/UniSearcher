@@ -100,7 +100,7 @@ func filterOutCountrySearchedFor(universities []structs.UniFromHipo, countrySear
 	var filteredUnis []structs.UniFromHipo
 
 	// removes the spaces from the search string
-	countrySearchedFor = strings.ReplaceAll(countrySearchedFor, " ", "%20")
+	countrySearchedFor = strings.ReplaceAll(countrySearchedFor, "%20", " ")
 	for i := range universities {
 		if strings.ToLower(universities[i].Country) != strings.ToLower(countrySearchedFor) {
 			filteredUnis = append(filteredUnis, universities[i])

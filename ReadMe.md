@@ -71,7 +71,6 @@ Response:
 This endpoint will retrieve information about the universities in neighbouring countries, 
 given that they have the same `{:partial_or_complete_university_name}` component in their institution name (for example: applied science).
 This should not include universities from the given country itself.
- *Note that this endpoint will not always be able to filter out the given countries if they have spaces in their names.*
 
 
 ````
@@ -200,11 +199,15 @@ developers to deploy and manage their apps and websites, was used in this assign
 
 - URL: `https://assignment1-j59l.onrender.com`
 
+To use the render instance, write the URL first and then add the endpoint path after.
+Example : `https://assignment1-j59l.onrender.com/unisearcher/v1/uniinfo/norway`
+
+
 ## Design choices
 
 During the development of this application the main areas of emphasis were maintaining loose coupling, 
 high cohesion, robustness and modularity that closely adheres to the conventions of Golang. 
 This was achieved by utilizing techniques such as utilizing constants, 
 separating handlers, structs and generic functions into different files.
-To further improve this service I would implement better ways of giving feedback to the client, and fix shortcomings 
-in the service, forexample not being able to filter out 
+To further improve this service I would implement better ways of giving feedback to the client, and fix other shortcomings 
+in the service. 
