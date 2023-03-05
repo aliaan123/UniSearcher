@@ -71,7 +71,7 @@ Response:
 This endpoint will retrieve information about the universities in neighbouring countries, 
 given that they have the same `{:partial_or_complete_university_name}` component in their institution name (for example: applied science).
 This should not include universities from the given country itself.
- *Note that this endpoint will not always be able to filter out the countries with spaces in their names.*
+ *Note that this endpoint will not always be able to filter out the given countries if they have spaces in their names.*
 
 
 ````
@@ -89,6 +89,7 @@ You could also specifiy the optional component `{?limit={:number}` after the uni
 It is important to first specify which country in the place of the `{:country_name}` , and then which university in the `{:partial_or_complete_university_name}` component.
 If you want to use the optional limit component then it has to be written right after the university component. 
 An example of how to search could be `/russia/tech?limit=3`, which would retrieve three universities in the neighbouring countries of russia with the "tech" in their name.
+- Note : *leave no empty spaces between components in the path when searching, unless the space is used in the `{:country_name}` or `{:partial_or_complete_university_name}` component of the path.*
 
 Example request: `neighbourunis/sweden/science`
 
@@ -205,5 +206,5 @@ During the development of this application the main areas of emphasis were maint
 high cohesion, robustness and modularity that closely adheres to the conventions of Golang. 
 This was achieved by utilizing techniques such as utilizing constants, 
 separating handlers, structs and generic functions into different files.
-
-
+To further improve this service I would implement better ways of giving feedback to the client, and fix shortcomings 
+in the service, forexample not being able to filter out 
