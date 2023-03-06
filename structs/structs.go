@@ -10,7 +10,7 @@ type University struct {
 	Maps      Map               `json:"map"`
 }
 
-// University struct that defines fields of the respone given by the api.
+// UniFromHipo struct that defines fields of the respone given by the api.
 type UniFromHipo struct {
 	AlphaTwoCode  string   `json:"alpha_two_code"`
 	Country       string   `json:"country"`

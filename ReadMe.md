@@ -60,9 +60,6 @@ Response:
 ]
 ````
 
-
-#### response
-
 - Content type: `application/json`
 
 
@@ -90,7 +87,7 @@ If you want to use the optional limit component then it has to be written right 
 An example of how to search could be `/russia/tech?limit=3`, which would retrieve three universities in the neighbouring countries of russia with the "tech" in their name.
 - Note : *leave no empty spaces between components in the path when searching, unless the space is used in the `{:country_name}` or `{:partial_or_complete_university_name}` component of the path.*
 
-Example request: `neighbourunis/sweden/science`
+Example request: `unisearcher/v1/neighbourunis/sweden/science`
 
 Response: 
 
@@ -117,39 +114,38 @@ Response:
 ````
 
 
-Example request using optional parameter limit: `neighbourunis/pakistan/science?limit=2`
+Example request using optional parameter limit: `unisearcher/v1/neighbourunis/saudi arabia/science and technology?limit=2`
 ````
 [
-    {
-        "name": "Kabul Health Sciences Institute",
-        "country": "Afghanistan",
-        "isocode": "AF",
-        "webpages": [
-            "http://www.kabuli.edu.af/"
-        ],
-        "languages": {
-            "prs": "Dari",
-            "pus": "Pashto",
-            "tuk": "Turkmen"
-        },
-        "maps": "https://www.openstreetmap.org/relation/303427"
-    },
-    {
-        "name": "Beijing Information Science and Technology University",
-        "country": "China",
-        "isocode": "CN",
-        "webpages": [
-            "http://www.biti.edu.cn/"
-        ],
-        "languages": {
-            "zho": "Chinese"
-        },
-        "maps": "https://www.openstreetmap.org/relation/270056"
-    }
+	{
+		"name": "Komar University of Science and Technology",
+		"country": "Iraq",
+		"isocode": "IQ",
+		"webpages": [
+			"http://www.komar.edu.iq/"
+		],
+		"languages": {
+			"ara": "Arabic",
+			"arc": "Aramaic",
+			"ckb": "Sorani"
+		},
+		"maps": "https://www.openstreetmap.org/relation/304934"
+	},
+	{
+		"name": "Jordan University of Science and Technology",
+		"country": "Jordan",
+		"isocode": "JO",
+		"webpages": [
+			"http://www.just.edu.jo/"
+		],
+		"languages": {
+			"ara": "Arabic"
+		},
+		"maps": "https://www.openstreetmap.org/relation/184818"
+	}
 ]
-````
 
-#### response
+````
 
 - Content type: `application/json`
 
@@ -184,9 +180,6 @@ Response:
 
 ````
 
-
-#### response
-
 - Content type: `application/json`
 - Status code: 200 if everything is OK
 
@@ -199,9 +192,9 @@ developers to deploy and manage their apps and websites, was used in this assign
 
 - URL: `https://assignment1-j59l.onrender.com`
 
-To use the render instance, write the URL first and then add the endpoint path after.
-Example : `https://assignment1-j59l.onrender.com/unisearcher/v1/uniinfo/norway`
-
+To use the service in the render instance, add the endpoint path after the URL.
+- Example (uniinfo) : `https://assignment1-j59l.onrender.com/unisearcher/v1/uniinfo/norway`
+- Example (neighbourUnis) : `https://assignment1-j59l.onrender.com/unisearcher/v1/neighbourunis/saudi%20arabia/science%20and%20technology?limit=2`
 
 ## Design choices
 

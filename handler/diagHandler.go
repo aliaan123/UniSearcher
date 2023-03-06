@@ -9,7 +9,7 @@ import (
 )
 
 // DiagHandler is a function handles HTTP requests, combines the responses into a struct and encodes the struct as a JSON and writes to the body
-func DiagHandler(w http.ResponseWriter, r *http.Request) {
+func DiagHandler(w http.ResponseWriter, _ *http.Request) {
 
 	// makes call to uniAPIstatus function to retrieve HTTP status code
 	var uniStatus = uniAPIstatus(w)

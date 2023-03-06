@@ -9,9 +9,7 @@ import (
 	"strings"
 )
 
-/*
-	File that holds functions both used in uniInfoHandler and neighbourUnisHandler
-*/
+// Utils file that holds functions both used in uniInfoHandler and neighbourUnisHandler
 
 // GetUniversityInfo is a function which makes HTTP request to the given API endpoint and, returns the unmarshalled JSON data as a slice of type "UniFromHipo".
 func GetUniversityInfo(searchName string, w http.ResponseWriter) []structs.UniFromHipo {
