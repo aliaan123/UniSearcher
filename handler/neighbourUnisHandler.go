@@ -115,7 +115,7 @@ func getBordersOfCountry(w http.ResponseWriter, countryName string) []structs.Bo
 	// removes the spaces from the search string
 	countryName = strings.ReplaceAll(countryName, " ", "%20")
 	// builds the url to get the bordering countries of the requested country from the api
-	requestedCountry := "https://restcountries.com/v3.1/name/" + countryName + "?fields=borders"
+	requestedCountry := constants.COUNTRY_NAME + countryName + constants.COUNTRY_FIELD_BORDER
 	// makes an HTTP GET request to an external API endpoint
 	resp, err := http.Get(requestedCountry)
 	// handles errors if request fails.
@@ -175,7 +175,8 @@ func BorderCountries(w http.ResponseWriter, borders []structs.Borders) []structs
 func findCountryByAlpha2Code(w http.ResponseWriter, alpha2Code string) structs.Country {
 
 	// builds the url to get the country that matches the alpha-two-code from the api
-	requestedCountry := "https://restcountries.com/v3.1/alpha/" + alpha2Code + "?fields=name,languages,maps,cca2"
+	//requestedCountry := "https://restcountries.com/v3.1/alpha/" + alpha2Code + "?fields=name,languages,maps,cca2"
+	requestedCountry := constants.COUNTRY_ALPHACODE + alpha2Code + constants.COUNTRY_FIELDS
 	// makes an HTTP GET request to an external API endpoint
 	resp, err := http.Get(requestedCountry)
 	// handles errors if request fails.

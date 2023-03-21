@@ -48,7 +48,7 @@ func diagResponse(uniAPI string, countryAPI string, time float64) structs.DiagSt
 func uniAPIstatus(w http.ResponseWriter) string {
 
 	// makes an HTTP GET request to an external API endpoint
-	response, err := http.Get("http://universities.hipolabs.com/")
+	response, err := http.Get(constants.UNIS)
 	// handles errors if request fails.
 	if err != nil {
 		http.Error(w, "Error when getting response from http://universities.hipolabs.com/. The API might be down at the moment.", http.StatusInternalServerError)
@@ -61,7 +61,7 @@ func uniAPIstatus(w http.ResponseWriter) string {
 func countryAPIstatus(w http.ResponseWriter) string {
 
 	// makes an HTTP GET request to an external API endpoint
-	response, err := http.Get("https://restcountries.com/")
+	response, err := http.Get(constants.COUNTRIES)
 	// handles errors if request fails.
 	if err != nil {
 		http.Error(w, "Error when getting response from https://restcountries.com/. The API might be down at the moment", http.StatusInternalServerError)

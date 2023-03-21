@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"Assignment1/constants"
 	"Assignment1/structs"
 	"encoding/json"
 	"io/ioutil"
@@ -17,7 +18,8 @@ func GetUniversityInfo(searchName string, w http.ResponseWriter) []structs.UniFr
 	// removes the spaces from the search string
 	searchName = strings.ReplaceAll(searchName, " ", "%20")
 	// builds the url to the get information about the universities in the requested country from the api
-	requestedUni := "http://universities.hipolabs.com/search?name_contains=" + searchName
+	//requestedUni := "http://universities.hipolabs.com/search?name_contains=" + searchName
+	requestedUni := constants.UNI_NAME + searchName
 	// makes an HTTP GET request to an external API endpoint
 	responseUni, err := http.Get(requestedUni)
 	// handles errors if request fails.
@@ -98,7 +100,7 @@ func GetCountryInfo(w http.ResponseWriter, countryName string) []structs.Country
 	// removes the spaces from the search string
 	countryName = strings.ReplaceAll(countryName, " ", "%20")
 	// builds the url to search for the requested country in the api
-	requestedCountry := "https://restcountries.com/v3.1/name/" + countryName + "?fields=name,languages,maps,cca2"
+	requestedCountry := constants.COUNTRY_NAME + countryName + constants.COUNTRY_FIELDS
 	// makes an HTTP GET request to an external API endpoint
 	responseCountry, err := http.Get(requestedCountry)
 	// handles errors if request fails.
