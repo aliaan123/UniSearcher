@@ -61,6 +61,7 @@ func UniInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// sets content type header to json
 	w.Header().Add("content-type", "application/json")
 	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "\t")
 	// encodes data to Json and sends the encoded data in the response body
 	err := encoder.Encode(combinedData)
 	if err != nil {
